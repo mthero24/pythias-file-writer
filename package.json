@@ -1,0 +1,53 @@
+{
+  "name": "pythias-file-writer-server",
+  "productName": "pythias-file-writer-server",
+  "version": "1.0.0",
+  "description": "pythias-file-writer-server",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.7",
+    "@babel/node": "^7.26.0",
+    "@babel/plugin-transform-runtime": "^7.26.8",
+    "@babel/preset-env": "^7.26.7",
+    "@babel/runtime": "^7.26.7",
+    "@electron-forge/cli": "^7.6.1",
+    "@electron-forge/maker-deb": "^7.6.1",
+    "@electron-forge/maker-rpm": "^7.6.1",
+    "@electron-forge/maker-squirrel": "^7.6.1",
+    "@electron-forge/maker-zip": "^7.6.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.6.1",
+    "@electron-forge/plugin-fuses": "^7.6.1",
+    "@electron-forge/publisher-github": "^7.6.1",
+    "@electron/fuses": "^1.8.0",
+    "electron": "34.0.2"
+  },
+  "keywords": [],
+  "author": {
+    "name": "michael thero",
+    "email": "mthero24@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "axios": "^1.7.9",
+    "babel": "^6.23.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "btoa": "^1.2.1",
+    "ejs": "^3.1.10",
+    "electron-squirrel-startup": "^1.0.1",
+    "express": "^4.21.2",
+    "express-react-views": "^0.11.0",
+    "ipp": "^2.0.1",
+    "pdf-to-printer": "^5.6.0",
+    "plist": "^3.1.0",
+    "xmldom": "^0.6.0"
+  }
+}
