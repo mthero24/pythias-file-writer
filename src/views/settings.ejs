@@ -23,11 +23,11 @@
         <div class="col-10">
             <h3 style="text-align: center; font-size: 1.5rem">Hot Folders</h3>
             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="DTF Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="dtf">
+                <input type="text" class="form-control" placeholder="DTF Hot Folder" aria-label="Recipient's username" value="<%=settings["dtf"]%>" aria-describedby="basic-addon2" disabled id="dtf">
                 <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('dtf')">Select DTF Hot Folder</span>
             </div>
             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="ROQ Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="roq">
+                <input type="text" class="form-control" placeholder="ROQ Hot Folder" aria-label="Recipient's username" value="<%=settings["roq"]%>" aria-describedby="basic-addon2" disabled id="roq">
                 <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('roq')">Select ROQ Hot Folder</span>
             </div>
             <div class="input-group mb-3">
@@ -39,12 +39,12 @@
                 <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('15 oz')">Select 15oz Mug Hot Folder</span>
             </div>
              <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Epson Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="epson">
+                <input type="text" class="form-control" placeholder="Epson Hot Folder" aria-label="Recipient's username" value="<%=settings["epson"]%>" aria-describedby="basic-addon2" disabled id="epson">
                 <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('epson')">Select Epson Hot Folder</span>
             </div>
              <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Epson Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="stickers">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('stickers')">Select Epson Hot Folder</span>
+                <input type="text" class="form-control" placeholder="Sticker Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" value="<%=settings["stickers"]%>" disabled id="stickers">
+                <span class="input-group-text" id="basic-addon2" style="background-color: #b4d6b4; cursor: pointer" onclick="selectDirectory('stickers')">Select stickers Hot Folder</span>
             </div>
             <h3 style="text-align: center; font-size: 1.5rem">Auto Printers</h3>
         </div>

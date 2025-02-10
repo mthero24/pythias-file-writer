@@ -11,6 +11,8 @@ import sharp from "sharp"
 import express from "express"
 import bodyParser from 'body-parser';
 import { getSettings, updateSettings } from "./functions/settings.js";
+import update from "./functions/update.cjs"
+update();
 const desktopPath = os.homedir() + '/Documents/hotfolder/';
 
 const publicDirectoryPath = path.join(__dirname, 'public');
@@ -47,6 +49,7 @@ exp.get('/update', function(req, res) {
   res.send({lastFileWritten});
 });
 exp.post("/", async (req,res)=>{
+  let settings = await getSettings();
     console.log(req.body)
     try{
         for(let f of req.body.files){
@@ -55,7 +58,7 @@ exp.post("/", async (req,res)=>{
                 let image = sharp(buffer)
                 let trimmedBase64 = await image.png({ quality: 100 }).toBuffer();
                 trimmedBase64 = trimmedBase64.toString("base64")
-                fs.writeFile(`${desktopPath}/${req.body.sku}.${f.type}`, trimmedBase64, "base64", (err) => {
+                fs.writeFile(`${settings[dtf]}/${req.body.sku}.${f.type}`, trimmedBase64, "base64", (err) => {
                     if (err) console.log(err);
                   });
                 lastFileWritten = `${req.body.sku}.${f.type}`
@@ -67,10 +70,11 @@ exp.post("/", async (req,res)=>{
         res.send({error: true, msg: e})
     }
 })
-exp.post("/roq", (req, res)=>{
+exp.post("/roq", async (req, res)=>{
+  let settings = await getSettings()
     let content = `${req.body.barcode};${req.body.barcode}-label.zpl;;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
     try{
-        fs.writeFile(`${desktopPath}/${req.body.barcode}.csv`, content, (err)=>{
+        fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
             if(err) console.log(err)
         })
         fs.writeFile(`${ desktopPath}/${req.body.barcode}-label.zpl`, req.body.label? req.body.label: "no label", (err)=>{
