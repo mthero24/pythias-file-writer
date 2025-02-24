@@ -4,6 +4,7 @@ import started from 'electron-squirrel-startup';
 import { fileURLToPath } from 'url'
 import { dirname } from 'path';
 import os from "os";
+import atob from  "atob";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import fs from "fs"
@@ -75,7 +76,7 @@ exp.post("/roq", async (req, res)=>{
         fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
             if(err) console.log(err)
         })
-        fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? req.body.label: "no label", (err)=>{
+        fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? atob(req.body.label): "no label", (err)=>{
             if(err) console.log(err)
         })
         lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
