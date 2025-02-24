@@ -7,7 +7,6 @@ import os from "os";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import fs from "fs"
-import sharp from "sharp"
 import express from "express"
 import bodyParser from 'body-parser';
 import { getSettings, updateSettings } from "./functions/settings.js";
@@ -55,10 +54,9 @@ exp.post("/", async (req,res)=>{
         for(let f of req.body.files){
             if(f.type == "png" || f.type == "jpg"){
                 const buffer = Buffer.from(f.buffer, "binary");
-                let image = sharp(buffer)
-                let trimmedBase64 = await image.png({ quality: 100 }).toBuffer();
-                trimmedBase64 = trimmedBase64.toString("base64")
-                fs.writeFile(`${settings[dtf]}/${req.body.sku}.${f.type}`, trimmedBase64, "base64", (err) => {
+                let trimmedBase64 = buffer.toString("base64");
+                console.log(trimmedBase64)
+                fs.writeFile(`${settings["dtf"]}/${req.body.sku}.${f.type}`, trimmedBase64, "base64", (err) => {
                     if (err) console.log(err);
                   });
                 lastFileWritten = `${req.body.sku}.${f.type}`
@@ -77,7 +75,7 @@ exp.post("/roq", async (req, res)=>{
         fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
             if(err) console.log(err)
         })
-        fs.writeFile(`${ desktopPath}/${req.body.barcode}-label.zpl`, req.body.label? req.body.label: "no label", (err)=>{
+        fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? req.body.label: "no label", (err)=>{
             if(err) console.log(err)
         })
         lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
