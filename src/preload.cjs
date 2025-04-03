@@ -9,4 +9,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.send("print-document", options);
   },
   selectFolder: () => ipcRenderer.invoke("dialog:openDirectory"),
+  printers: async () =>{
+    printers = await ipcRenderer.invoke("printers")
+    console.log(printers)
+    return printers
+  }
 });

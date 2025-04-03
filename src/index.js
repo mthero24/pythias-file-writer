@@ -13,10 +13,12 @@ import bodyParser from 'body-parser';
 import { getSettings, updateSettings } from "./functions/settings.js";
 import update from "./functions/update.cjs"
 update();
-const desktopPath = os.homedir() + '/Documents/hotfolder/';
+const desktopPath = os.homedir() + '/Documents/pythias/';
 
 const publicDirectoryPath = path.join(__dirname, 'public');
 let lastFileWritten = "Waiting for file to write"
+import {spawn} from "child_process";
+import ptp from "pdf-to-printer2";
 const exp = express();
 exp.set('view engine', 'ejs');
 exp.set('views', __dirname + '/views/');
@@ -69,17 +71,63 @@ exp.post("/", async (req,res)=>{
         res.send({error: true, msg: e})
     }
 })
+exp.post("/embroidery", async (req,res)=>{
+  let settings = await getSettings();
+    console.log(req.body)
+    try{
+        for(let f of req.body.files){
+          console.log(f.buffer)
+          fs.writeFile(`${settings["embroidery"]}/${req.body.sku}.${f.type}`, Buffer.from(f.buffer), "base64", (err) => {
+              if (err) console.log(err);
+            });
+          lastFileWritten = `${req.body.sku}.${f.type}`
+        }
+        res.send({error: false, msg: "file written"})
+    }catch(e){
+        console.log(e)
+        res.send({error: true, msg: e})
+    }
+})
 exp.post("/roq", async (req, res)=>{
   let settings = await getSettings()
-    let content = `${req.body.barcode};${req.body.barcode}-label.zpl;;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+    let content
+    if(req.body.labelType != "pdf"){
+      content = `${req.body.barcode};${req.body.barcode}-label.zpl;;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+    }else{
+      content = `${req.body.barcode};${req.body.label? `${req.body.barcode}-label.pdf`: `${req.body.barcode}-label.zpl`};;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+    }
     try{
-        fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+        if(req.body.labelType != "pdf"){
+          let buffer
+          if(req.body.label) buffer = Buffer.from(req.body.label, "base64");
+          fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? buffer: "no label", (err)=>{
             if(err) console.log(err)
-        })
-        fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? atob(req.body.label): "no label", (err)=>{
-            if(err) console.log(err)
-        })
-        lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+            else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+              if(err) console.log(err)
+                lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+            })
+          })
+        }else{
+          let buffer
+          if(req.body.label) {
+            buffer = Buffer.from(req.body.label, "base64");
+            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.pdf`, req.body.label? buffer: "no label", (err)=>{
+                if(err) console.log(err)
+                else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+                  if(err) console.log(err)
+                    lastFileWritten = `${req.body.barcode}-label.pdf & ${req.body.barcode}.csv`
+                })
+            })
+          }else{
+            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, "no label", (err)=>{
+              if(err) console.log(err)
+              else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+                  if(err) console.log(err)
+                    lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+                })
+            })
+          }
+        }
         //waiting.push({id:req.body.barcode, exit: req.body.exit})
         //if(!monitorRunning) monitor("dummy.csv", req.body.barcode)
         res.send({error: false, msg: "files written"})
@@ -87,6 +135,26 @@ exp.post("/roq", async (req, res)=>{
         console.log(e)
         res.send({error: true, msg: e})
     }
+})
+exp.post("/print-shipping", async (req, res)=>{
+  let settings = await getSettings()
+  let printerName = settings["shippingLabelPrinter"]
+  const buffer = Buffer.from(req.body.label, "base64");
+  fs.writeFile(`${desktopPath}/${req.body.barcode}-label.pdf`, buffer, (err)=>{
+    if(err) console.log(err)
+    else {
+      ptp
+      .print(`${desktopPath}/${req.body.barcode}-label.pdf`, {printer: printerName,  unix: ["-o fit-to-page"],
+        win32: ['-print-settings "fit"']})
+      .then(()=>{
+        lastFileWritten = `${req.body.barcode}-label.zpl`
+        res.send({error: false})
+      })
+      .catch((e)=>{
+        res.send({error: true, msg: e, printer: printerName})
+      });
+    }
+  })
 })
 exp.post("/sublimation", async (req, res) => {
   let settings = await getSettings()
@@ -144,14 +212,14 @@ if (started) {
   app.quit();
 }
 
-const createWindow = () => {
+const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 450,
     height: 300,
-    icon: path.join(__dirname, "/public/logo-dark-400-greenbg.png"),
+    icon: path.join(__dirname, "/public/logoPythias-400.png"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
   ipcMain.handle("dialog:openDirectory", async () => {
@@ -164,13 +232,38 @@ const createWindow = () => {
       return filePaths[0];
     }
   });
+
+  ipcMain.on("print-document", (event, options) => {
+    // Use a printing library (like `pdf-to-printer`) to print the received HTML
+    // ... handle printing logic here
+    print(path.join(__dirname, `/assets/${options.file}`), {
+      printer: options.printer,
+    });
+  })
+  ipcMain.handle("printers", async (event) => {
+    // Use a printing library (like `pdf-to-printer`) to print the received HTML
+    // ... handle printing logic here
+    console.log("here")
+    const printers = await mainWindow.webContents.getPrintersAsync();
+    let printerNames= printers.map(p=>{
+      return p.name
+    })
+    console.log(printerNames)
+    return printerNames
+  })
   // // and load the index.html of the app.
   // mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.loadURL("http://localhost:3500")
   mainWindow.maximize();
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+ // mainWindow.webContents.openDevTools();
+  // const printers = await mainWindow.webContents.getPrintersAsync();
+  // let printerNames= printers.map(p=>{
+  //   return p.name
+  // })
+  // console.log(printerNames)
+  // print(path.join(__dirname, "/assets/DecisionLetter20250129082714.pdf"), {printer:"HP OfficeJet Pro 8020 series [63D443]"});
 };
 
 // This method will be called when Electron has finished
