@@ -100,31 +100,52 @@ exp.post("/roq", async (req, res)=>{
         if(req.body.labelType != "pdf"){
           let buffer
           if(req.body.label) buffer = Buffer.from(req.body.label, "base64");
-          fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? buffer: "no label", (err)=>{
+          fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, req.body.label? buffer: "no label", async (err)=>{
             if(err) console.log(err)
-            else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+            else {
+              await new Promise((resolve)=>{
+                setTimeout(()=>{
+                  resolve()
+                }, 1000)
+              })
+              fs.writeFile(`${settings["roq"]}/${req.body.barcode}-!pdf-labelType.csv`, content, (err)=>{
               if(err) console.log(err)
                 lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
-            })
+              })
+            }
           })
         }else{
           let buffer
           if(req.body.label) {
             buffer = Buffer.from(req.body.label, "base64");
-            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.pdf`, req.body.label? buffer: "no label", (err)=>{
+            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.pdf`, req.body.label? buffer: "no label", async (err)=>{
                 if(err) console.log(err)
-                else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
-                  if(err) console.log(err)
-                    lastFileWritten = `${req.body.barcode}-label.pdf & ${req.body.barcode}.csv`
-                })
-            })
-          }else{
-            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, "no label", (err)=>{
-              if(err) console.log(err)
-              else fs.writeFile(`${settings["roq"]}/${req.body.barcode}.csv`, content, (err)=>{
+                else {
+                  await new Promise((resolve)=>{
+                    setTimeout(()=>{
+                      resolve()
+                    }, 1000)
+                  })
+                  fs.writeFile(`${settings["roq"]}/${req.body.barcode}-pdf-labelType.csv`, content, (err)=>{
                   if(err) console.log(err)
                     lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+                  })
+                }
+            })
+          }else{
+            fs.writeFile(`${settings["roq"]}/${req.body.barcode}-label.zpl`, "no label", async (err)=>{
+              if(err) console.log(err)
+              else {
+                await new Promise((resolve)=>{
+                  setTimeout(()=>{
+                    resolve()
+                  }, 1000)
                 })
+                fs.writeFile(`${settings["roq"]}/${req.body.barcode}-pdfLabelType-no-label.csv`, content, (err)=>{
+                  if(err) console.log(err)
+                  lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+                })
+              }
             })
           }
         }

@@ -4,14 +4,14 @@ const path = require("path");
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: path.join(__dirname, "./src/public/pythias-logo-new-black-bg.ico"),
+    icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
   },
   rebuildConfig: {},
   makers: [
     {
       name: "@electron-forge/maker-squirrel",
       config: {
-        icon: path.join(__dirname, "./src/public/pythias-logo-new-black-bg.ico"),
+        icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
       },
     },
     {
@@ -21,13 +21,13 @@ module.exports = {
     {
       name: "@electron-forge/maker-deb",
       config: {
-        icon: path.join(__dirname, "./src/public/pythias-logo-new-black-bg.ico"),
+        icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
       },
     },
     {
       name: "@electron-forge/maker-rpm",
       config: {
-        icon: path.join(__dirname, "./src/public/pythias-logo-new-black-bg.ico"),
+        icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
       },
     },
   ],
@@ -35,7 +35,7 @@ module.exports = {
     {
       name: "@electron-forge/plugin-auto-unpack-natives",
       config: {
-        icon: path.join(__dirname, "./src/public/pythias-logo-new-black-bg"),
+        icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
       },
     },
     // Fuses are used to enable/disable various Electron functionality
