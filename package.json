@@ -1,7 +1,7 @@
 {
   "name": "pythias-file-writer-server",
   "productName": "pythias-file-writer-server",
-  "version": "12.0.37",
+  "version": "12.0.38",
   "description": "pythias-file-writer-server",
   "type": "module",
   "main": "src/index.js",
