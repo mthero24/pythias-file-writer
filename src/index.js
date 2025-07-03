@@ -90,12 +90,24 @@ exp.post("/embroidery", async (req,res)=>{
 })
 exp.post("/roq", async (req, res)=>{
   let settings = await getSettings()
+  console.log(req.body, !req.body.roqNew)
     let content
     if(req.body.labelType != "pdf"){
-      content = `${req.body.barcode};${req.body.barcode}-label.zpl;;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+      if(!req.body.roqNew){
+        content = `${req.body.barcode};${req.body.barcode}-label.zpl;;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+      }else{
+        content = `${req.body.barcode};;;;;;${req.body.QuantityToStack};${req.body.barcode}-label.zpl;${req.body.Recipe}.xml;${req.body.exit};${req.body.quantity}`
+      }
+      console.log(content, "content", !req.body.roqNew )
     }else{
-      content = `${req.body.barcode};${req.body.label? `${req.body.barcode}-label.pdf`: `${req.body.barcode}-label.zpl`};;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+      if(!req.body.roqNew){
+        content = `${req.body.barcode};${req.body.label? `${req.body.barcode}-label.pdf`: `${req.body.barcode}-label.zpl`};;;;;${req.body.quantity};;;${req.body.pause};${req.body.QuantityToStack};${req.body.Recipe};${req.body.sleeves};${req.body.body};${req.body.exit}`
+      }else{
+       content =  `${req.body.barcode};;;;;;${req.body.QuantityToStack};${req.body.barcode}-label.pdf;${req.body.Recipe}.xml;${req.body.exit};${req.body.quantity}`
+      }
+     console.log(content, "content", !req.body.roqNew )
     }
+    console.log(content, "content", !req.body.roqNew )
     try{
         if(req.body.labelType != "pdf"){
           let buffer
@@ -124,11 +136,11 @@ exp.post("/roq", async (req, res)=>{
                   await new Promise((resolve)=>{
                     setTimeout(()=>{
                       resolve()
-                    }, 1000)
+                    }, 10)
                   })
                   fs.writeFile(`${settings["roq"]}/${req.body.barcode}-pdf-labelType.csv`, content, (err)=>{
                   if(err) console.log(err)
-                    lastFileWritten = `${req.body.barcode}-label.zpl & ${req.body.barcode}.csv`
+                    lastFileWritten = `${req.body.barcode}-label.pdf & ${req.body.barcode}.csv`
                   })
                 }
             })
@@ -139,7 +151,7 @@ exp.post("/roq", async (req, res)=>{
                 await new Promise((resolve)=>{
                   setTimeout(()=>{
                     resolve()
-                  }, 1000)
+                  }, 10)
                 })
                 fs.writeFile(`${settings["roq"]}/${req.body.barcode}-pdfLabelType-no-label.csv`, content, (err)=>{
                   if(err) console.log(err)
@@ -169,6 +181,26 @@ exp.post("/print-shipping", async (req, res)=>{
         win32: ['-print-settings "fit"']})
       .then(()=>{
         lastFileWritten = `${req.body.barcode}-label.zpl`
+        res.send({error: false})
+      })
+      .catch((e)=>{
+        res.send({error: true, msg: e, printer: printerName})
+      });
+    }
+  })
+})
+exp.post("/print-labels", async (req, res)=>{
+  let settings = await getSettings()
+  let printerName = settings["shippingLabelPrinter"]
+  const buffer = Buffer.from(req.body.label, "base64");
+  fs.writeFile(`${desktopPath}/${req.body.barcode}-label.pdf`, buffer, (err)=>{
+    if(err) console.log(err)
+    else {
+      ptp
+      .print(`${desktopPath}/${req.body.barcode}-label.pdf`, {printer: printerName,  unix: ["-o fit-to-page"],
+        win32: ['-print-settings "paper=My Custom Paper-100*120"'], paperSize: "My Custom Paper-57 x 51", scale: "fit"})
+      .then(()=>{
+        lastFileWritten = `label.pdf`
         res.send({error: false})
       })
       .catch((e)=>{
@@ -278,7 +310,7 @@ const createWindow = async () => {
   mainWindow.maximize();
 
   // Open the DevTools.
- // mainWindow.webContents.openDevTools();
+ mainWindow.webContents.openDevTools();
   // const printers = await mainWindow.webContents.getPrintersAsync();
   // let printerNames= printers.map(p=>{
   //   return p.name
