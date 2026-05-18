@@ -1,17 +1,10 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  printDocument: (options) => {
-    // Send the HTML content to the main process via IPC
-
-    ipcRenderer.send("print-document", options);
-  },
-  selectFolder: () => ipcRenderer.invoke("dialog:openDirectory"),
-  printers: async () =>{
-    printers = await ipcRenderer.invoke("printers")
-    console.log(printers)
-    return printers
-  }
+  printDocument:   (options)  => ipcRenderer.send("print-document", options),
+  selectFolder:    ()         => ipcRenderer.invoke("dialog:openDirectory"),
+  printers:        ()         => ipcRenderer.invoke("printers"),
+  minimizeToTray:  ()         => ipcRenderer.send("minimize-to-tray"),
+  installUpdate:   ()         => ipcRenderer.send("install-update"),
+  onUpdateStatus:  (callback) => ipcRenderer.on("update-status", (_e, data) => callback(data)),
 });

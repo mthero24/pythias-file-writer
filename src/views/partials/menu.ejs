@@ -1,16 +1,33 @@
-<nav class="" style="background: #fedd94;">
-     <div class="row">
-       <div class="col-sm-3" style="padding:.5%;">
-            <div><a class="" href="/"><img src="/pythias-logo-new-black-100.png" alt="logo" width="75" height="auto" style="margin-left: 20%; padding: 0px;"/></a></div>
-        </div>
-        <div class="col-sm-6 ">
-        </div>
-        <div class="col-sm-3">
-            <div style="margin-top: 5%; padding: 2%">
-                <p style="color: #332c2c; font-size: 2rem; text-align: right; margin-right: 20%">
-                    <a href="/settings"><i class="fa-solid fa-gear" style="color: #332c2c; font-size: 2rem; text-align: right;"></i></a>
-                </p>
-            </div>
-    </div>
-    </div>
-</nav>
+<div id="nav-root"></div>
+<script type="text/babel">
+  const { AppBar, Toolbar, Box, IconButton, Tooltip, ThemeProvider, createTheme } = MaterialUI;
+
+  const navTheme = createTheme({
+    palette: { mode: 'dark', primary: { main: '#fedd94', contrastText: '#1a1a1a' } },
+    typography: { fontFamily: '"Roboto", sans-serif' },
+  });
+
+  function NavBar() {
+    return (
+      <ThemeProvider theme={navTheme}>
+        <AppBar position="fixed" elevation={0} sx={{ bgcolor: '#fedd94', borderBottom: '2px solid #e8c020' }}>
+          <Toolbar sx={{ minHeight: 56 }}>
+            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+              <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+                <img src="/pythias-logo-new-black-100.png" alt="Pythias" height="30" style={{ display: 'block' }} />
+              </a>
+            </Box>
+            <Tooltip title="Settings">
+              <IconButton href="/settings" size="large" sx={{ color: '#1a1a1a' }}>
+                <i className="fa-solid fa-gear" style={{ fontSize: '1rem' }} />
+              </IconButton>
+            </Tooltip>
+          </Toolbar>
+        </AppBar>
+        <Toolbar sx={{ minHeight: 56 }} />
+      </ThemeProvider>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('nav-root')).render(<NavBar />);
+</script>

@@ -2,87 +2,205 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Pythias Technologies File Writer</title>
-    <link rel="stylesheet" href="index.css" />
-    <link rel="icon" href="/logo-dark-50.png">
+    <title>Pythias File Writer — Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@emotion/react@11.11.4/dist/emotion-react.umd.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@mui/material@5.15.12/umd/material-ui.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>* { box-sizing: border-box; } body { margin: 0; background: #0d0d0d; }</style>
   </head>
-  <body style="background: #000; overflow: hidden;">
+  <body>
+    <script>
+      window._fwSettings = <%- JSON.stringify(settings) %>;
+    </script>
     <%- include('partials/menu.ejs') %>
-    <div style="width: 100%;">
-      <div class="row" style="margin-top: 1%;">
-        <div class="col-2"> <img src="/logoPythias-400.png" width="100%" height="auto" style="width: 100%; height: auto;"/></div>
-        <div class="col-1"></div>
-        <div class="col-6">
-            <h3 style="text-align: center; font-size: 1.5rem; color: #fff">Hot Folders</h3>
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="DTF Hot Folder" aria-label="Recipient's username" value="<%=settings["dtf"]%>" aria-describedby="basic-addon2" disabled id="dtf">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('dtf')">Select DTF Hot Folder</span>
-            </div>
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="Embroidery Hot Folder" aria-label="Recipient's username" value="<%=settings["embroidery"]%>" aria-describedby="basic-addon2" disabled id="embroidery">
-              <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('embroidery')">Select Embroidery Hot Folder</span>
-          </div>
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="ROQ Hot Folder" aria-label="Recipient's username" value="<%=settings["roq"]%>" aria-describedby="basic-addon2" disabled id="roq">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('roq')">Select ROQ Hot Folder</span>
-            </div>
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="11oz Mug Hot Folder" value="<%=settings["11 oz"]%>" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="11 oz">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('11 oz')">Select 11oz Mug Hot Folder</span>
-            </div>
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="15oz Mug Hot Folder" value="<%=settings["15 oz"]%>" aria-label="Recipient's username" aria-describedby="basic-addon2" disabled id="15 oz">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('15 oz')">Select 15oz Mug Hot Folder</span>
-            </div>
-             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Epson Hot Folder" aria-label="Recipient's username" value="<%=settings["epson"]%>" aria-describedby="basic-addon2" disabled id="epson">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('epson')">Select Epson Hot Folder</span>
-            </div>
-             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Sticker Hot Folder" aria-label="Recipient's username" aria-describedby="basic-addon2" value="<%=settings["stickers"]%>" disabled id="stickers">
-                <span class="input-group-text" id="basic-addon2" style="background-color: #fedd94; cursor: pointer" onclick="selectDirectory('stickers')">Select stickers Hot Folder</span>
-            </div>
-            <h3 style="text-align: center; font-size: 1.5rem; color: #fff">Auto Printers</h3>
-            
-            <select class="form-select" value="<%=settings["shippingLabelPrinter"]%>" id="label-printer-select" onchange='selectPrinter("shippingLabelPrinter", "label-printer-select")'> 
-            </select>
-        </div>
-        <div class="col-3"></div>
-      </div>
-      
-    </div>
-    
-    <script type="text/javascript">
-      let selectPrinter = async (set, id)=>{
-        let printer = document.getElementById(id).value;
-        console.log(printer)
-        let res = await axios.post("/settings", {path: printer, name:set})
-        console.log(res.data)
+    <div id="root"></div>
+    <script type="text/babel">
+      const {
+        ThemeProvider, createTheme, CssBaseline, Box, Typography,
+        Card, CardContent, CardHeader, TextField, Button, IconButton,
+        Select, MenuItem, FormControl, InputLabel, Divider,
+        Snackbar, Alert, CircularProgress, Tooltip,
+      } = MaterialUI;
+      const { useState, useEffect } = React;
+
+      const theme = createTheme({
+        palette: {
+          mode: 'dark',
+          primary: { main: '#fedd94', contrastText: '#1a1a1a' },
+          background: { default: '#0d0d0d', paper: '#1a1a1a' },
+        },
+        typography: { fontFamily: '"Roboto", sans-serif' },
+        shape: { borderRadius: 10 },
+      });
+
+      const HOT_FOLDERS = [
+        { key: 'dtf',        label: 'DTF',          icon: 'fa-print' },
+        { key: 'embroidery', label: 'Embroidery',   icon: 'fa-scissors' },
+        { key: 'roq',        label: 'ROQ',           icon: 'fa-boxes-stacked' },
+        { key: '11 oz',      label: '11oz Mug',      icon: 'fa-mug-hot' },
+        { key: '15 oz',      label: '15oz Mug',      icon: 'fa-mug-hot' },
+        { key: 'epson',      label: 'Epson',         icon: 'fa-print' },
+        { key: 'stickers',   label: 'Stickers',      icon: 'fa-tag' },
+      ];
+
+      const inputSx = {
+        '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#fedd94' } },
+        '& .MuiInputLabel-root.Mui-focused': { color: '#fedd94' },
+      };
+
+      function FolderRow({ label, icon, value, onChange }) {
+        const pick = async () => {
+          const path = await window.electronAPI?.selectFolder();
+          if (path) onChange(path);
+        };
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+            <i className={`fa-solid ${icon}`} style={{ color: '#fedd94', fontSize: '0.85rem', width: 16, textAlign: 'center', flexShrink: 0 }} />
+            <TextField
+              label={label}
+              value={value || ''}
+              variant="outlined"
+              size="small"
+              fullWidth
+              inputProps={{ readOnly: true, style: { fontFamily: 'monospace', fontSize: '0.82rem' } }}
+              placeholder="Not set"
+              sx={inputSx}
+            />
+            <Tooltip title="Browse…">
+              <IconButton
+                onClick={pick}
+                size="small"
+                sx={{ border: '1px solid #333', borderRadius: 1, color: '#888', flexShrink: 0, '&:hover': { borderColor: '#fedd94', color: '#fedd94' } }}
+              >
+                <i className="fa-solid fa-folder-open" style={{ fontSize: '0.85rem' }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
       }
-     let selectDirectory = async (im)=>{
-        window.electronAPI.selectFolder().then(async result=>{
-            console.log(result)
-            document.getElementById(im).value = result
-            let res = await axios.post("/settings", {path: result, name:im})
-            console.log(res.data)
-        })
-     }
-     let printers 
-    window.electronAPI.printers().then(async results =>{
-      let sp = "<%=settings['shippingLabelPrinter']%>"
-      console.log(results)
-      printers = results
-      let html = ""
-      printers.map(p=> html = `${html}<option value="${p}" selected="${sp == p? true: false}">${p}</option>`)
-      console.log(html)
-      document.getElementById("label-printer-select").innerHTML = `
-        <option>Select Shipping Label Printer</option>
-        ${html}
-      `
-    })
+
+      function SettingsPage() {
+        const [settings, setSettings] = useState(window._fwSettings || {});
+        const [printers, setPrinters]   = useState([]);
+        const [saving, setSaving]       = useState(false);
+        const [toast, setToast]         = useState({ open: false, msg: '', severity: 'success' });
+
+        useEffect(() => {
+          window.electronAPI?.printers?.().then(list => setPrinters(list || []));
+        }, []);
+
+        const showToast = (msg, severity = 'success') => setToast({ open: true, msg, severity });
+
+        const saveSetting = async (key, value) => {
+          const next = { ...settings, [key]: value };
+          setSettings(next);
+          setSaving(true);
+          try {
+            const { data } = await axios.post('/settings', { name: key, path: value });
+            if (data.error) showToast('Save failed', 'error');
+            else showToast('Saved');
+          } catch {
+            showToast('Could not reach server', 'error');
+          } finally {
+            setSaving(false);
+          }
+        };
+
+        return (
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Box sx={{ minHeight: 'calc(100vh - 56px)', bgcolor: 'background.default', p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h5" sx={{ color: '#f0f0f0', fontWeight: 700 }}>Settings</Typography>
+                {saving && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={14} sx={{ color: '#fedd94' }} />
+                    <Typography variant="caption" sx={{ color: '#fedd94' }}>Saving…</Typography>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Hot Folders */}
+              <Card sx={{ bgcolor: '#1a1a1a', border: '1px solid #2a2a2a', mb: 2.5 }}>
+                <CardHeader
+                  avatar={<i className="fa-solid fa-folder" style={{ color: '#fedd94', fontSize: '1rem' }} />}
+                  title={<Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#f0f0f0' }}>Hot Folders</Typography>}
+                  subheader={<Typography variant="caption" sx={{ color: '#555' }}>Destination paths for each print type</Typography>}
+                  sx={{ borderBottom: '1px solid #2a2a2a', pb: 1.5 }}
+                />
+                <CardContent sx={{ pt: 2 }}>
+                  {HOT_FOLDERS.map(f => (
+                    <FolderRow
+                      key={f.key}
+                      label={f.label}
+                      icon={f.icon}
+                      value={settings[f.key]}
+                      onChange={(path) => saveSetting(f.key, path)}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Printers */}
+              <Card sx={{ bgcolor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+                <CardHeader
+                  avatar={<i className="fa-solid fa-print" style={{ color: '#fedd94', fontSize: '1rem' }} />}
+                  title={<Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#f0f0f0' }}>Auto Printers</Typography>}
+                  subheader={<Typography variant="caption" sx={{ color: '#555' }}>Printers used for direct printing operations</Typography>}
+                  sx={{ borderBottom: '1px solid #2a2a2a', pb: 1.5 }}
+                />
+                <CardContent sx={{ pt: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <i className="fa-solid fa-tag" style={{ color: '#fedd94', fontSize: '0.85rem', width: 16, textAlign: 'center', flexShrink: 0 }} />
+                    <FormControl size="small" fullWidth sx={inputSx}>
+                      <InputLabel sx={{ '&.Mui-focused': { color: '#fedd94' } }}>Shipping Label Printer</InputLabel>
+                      <Select
+                        label="Shipping Label Printer"
+                        value={settings['shippingLabelPrinter'] || ''}
+                        onChange={(e) => saveSetting('shippingLabelPrinter', e.target.value)}
+                        sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                      >
+                        <MenuItem value=""><em>Select a printer</em></MenuItem>
+                        {printers.map(p => (
+                          <MenuItem key={p} value={p}>{p}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  {printers.length === 0 && (
+                    <Typography variant="caption" sx={{ color: '#444', display: 'block', mt: 1, ml: 4 }}>
+                      No printers detected
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Box>
+
+            <Snackbar
+              open={toast.open}
+              autoHideDuration={3000}
+              onClose={() => setToast(t => ({ ...t, open: false }))}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+              <Alert severity={toast.severity} sx={{
+                bgcolor: toast.severity === 'success' ? 'rgba(76,175,80,0.15)' : 'rgba(211,47,47,0.15)',
+                border: `1px solid ${toast.severity === 'success' ? '#4caf50' : '#f44336'}`,
+              }}>
+                {toast.msg}
+              </Alert>
+            </Snackbar>
+          </ThemeProvider>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<SettingsPage />);
     </script>
   </body>
 </html>

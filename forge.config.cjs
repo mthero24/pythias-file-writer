@@ -5,6 +5,13 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
+    win32metadata: {
+      CompanyName: 'Pythias Technologies',
+      FileDescription: 'Pythias File Writer Server',
+      ProductName: 'Pythias File Writer Server',
+      InternalName: 'pythias-file-writer-server',
+      'requested-execution-level': 'asInvoker',
+    },
   },
   rebuildConfig: {},
   makers: [
