@@ -1,10 +1,13 @@
+require('dotenv').config();
 const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 const path = require("path");
 module.exports = {
   packagerConfig: {
     asar: true,
+    tmpdir: 'C:\\forge-tmp',
     icon: path.join(__dirname, "./src/public/pythias-logo-new-gold-black-bg.ico"),
+    ignore: [/\.d\.ts$/, /\.d\.ts\.map$/, /\.map\.js$/, /node_modules\/.cache/],
     win32metadata: {
       CompanyName: 'Pythias Technologies',
       FileDescription: 'Pythias File Writer Server',

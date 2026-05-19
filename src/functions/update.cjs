@@ -1,12 +1,7 @@
-const { updateElectronApp } = require('update-electron-app');
-const { autoUpdater } = require('electron');
+const { autoUpdater, app } = require('electron');
 
 module.exports = function setupUpdates(win) {
-  updateElectronApp({
-    updateInterval: '1 hour',
-    notifyUser: false,
-    logger: { log: console.log, info: console.log, warn: console.warn, error: console.error },
-  });
+  if (!app.isPackaged) return;
 
   const send = (payload) => win?.webContents?.send('update-status', payload);
 
@@ -15,4 +10,13 @@ module.exports = function setupUpdates(win) {
   autoUpdater.on('update-not-available', ()    => send({ status: 'current' }));
   autoUpdater.on('update-downloaded',    ()    => send({ status: 'ready' }));
   autoUpdater.on('error',                (err) => send({ status: 'error', msg: err.message }));
+
+  try {
+    const feedURL = `https://update.electronjs.org/mthero24/pythias-electon-apps/win32-x64/${app.getVersion()}`;
+    autoUpdater.setFeedURL({ url: feedURL, serverType: 'json' });
+    autoUpdater.checkForUpdates();
+    setInterval(() => autoUpdater.checkForUpdates(), 60 * 60 * 1000);
+  } catch (err) {
+    send({ status: 'error', msg: err.message });
+  }
 };

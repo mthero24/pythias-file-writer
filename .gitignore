@@ -90,6 +90,7 @@ typings/
 
 # Electron-Forge
 out/
+../.forge-tmp/
 
 # Runtime-generated config (stored in ~/Documents/pythias/ at runtime)
 src/settings.json
