@@ -41,6 +41,7 @@ try {
 let useSettings = JSON.parse(rawSettings);
 
 export const getSettings = async () => useSettings;
+export const getSettingsSync = () => useSettings;
 
 export const updateSettings = async (sett) => {
   useSettings = sett;

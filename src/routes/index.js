@@ -1,12 +1,33 @@
 import express from "express";
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import os from "os";
-import ptp from "pdf-to-printer2";
-import sharp from "sharp";
+import Jimp from "jimp";
+import { execFile as _execFile } from "node:child_process";
+import { promisify } from "node:util";
+const execFile = promisify(_execFile);
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { mkdirSync } from "node:fs";
 import { getSettings, updateSettings } from "../functions/settings.js";
+import { getWeightForStation, restartScales } from "../functions/scales.js";
+
+const __routes = dirname(fileURLToPath(import.meta.url));
+// Use SumatraPDF bundled with pdf-to-printer (already a dependency) — avoids util.promisify
+let _sumatra = join(__routes, "../../node_modules/pdf-to-printer/dist/SumatraPDF-3.4.6-32.exe");
+if (_sumatra.includes("app.asar")) _sumatra = _sumatra.replace("app.asar", "app.asar.unpacked");
+
+async function printPDF(filePath, { printer, printSettings } = {}) {
+  const args = printer ? ["-print-to", printer] : ["-print-to-default"];
+  args.push("-silent");
+  if (printSettings) args.push("-print-settings", printSettings);
+  args.push(filePath);
+  await execFile(_sumatra, args);
+}
 
 const router = express.Router();
-const desktopPath = os.homedir() + "/Documents/pythias/";
+const desktopPath = join(os.homedir(), "Documents", "pythias");
+// Ensure the output directory exists at startup
+try { mkdirSync(desktopPath, { recursive: true }); } catch {}
 
 let lastFileWritten = "Waiting for file to write";
 
@@ -23,8 +44,15 @@ router.get("/settings", async (req, res) => {
 
 router.post("/settings", async (req, res) => {
   const settings = await getSettings();
-  settings[req.body.name] = req.body.path;
+  // Some values (e.g. scaleDevices) are stored as JSON arrays
+  let value = req.body.path;
+  if (typeof value === "string" && (value.startsWith("[") || value.startsWith("{"))) {
+    try { value = JSON.parse(value); } catch {}
+  }
+  settings[req.body.name] = value;
   await updateSettings(settings);
+  // If scale config changed, reconnect immediately
+  if (req.body.name === "scaleDevices") restartScales();
   res.send({ error: false });
 });
 
@@ -107,14 +135,10 @@ router.post("/print-shipping", async (req, res) => {
   const settings = await getSettings();
   const printerName = settings["shippingLabelPrinter"];
   const buffer = Buffer.from(req.body.label, "base64");
-  const filePath = `${desktopPath}/${req.body.barcode}-label.pdf`;
+  const filePath = join(desktopPath, `${req.body.barcode}-label.pdf`);
   try {
     await fs.writeFile(filePath, buffer);
-    await ptp.print(filePath, {
-      printer: printerName,
-      unix: ["-o fit-to-page"],
-      win32: ['-print-settings "fit"'],
-    });
+    await printPDF(filePath, { printer: printerName, printSettings: "fit" });
     lastFileWritten = `${req.body.barcode}-label.pdf`;
     res.send({ error: false });
   } catch (e) {
@@ -127,22 +151,39 @@ router.post("/print-labels", async (req, res) => {
   const settings = await getSettings();
   const printerName = settings["shippingLabelPrinter"];
   const buffer = Buffer.from(req.body.label, "base64");
-  const filePath = `${desktopPath}/${req.body.barcode}-label.pdf`;
+  const filePath = join(desktopPath, `${req.body.barcode}-label.pdf`);
   try {
     await fs.writeFile(filePath, buffer);
-    await ptp.print(filePath, {
-      printer: printerName,
-      unix: ["-o fit-to-page"],
-      win32: ['-print-settings "paper=My Custom Paper-100*120"'],
-      paperSize: "My Custom Paper-57 x 51",
-      scale: "fit",
-    });
+    await printPDF(filePath, { printer: printerName, printSettings: "paper=My Custom Paper-100x120,fit" });
     lastFileWritten = "label.pdf";
     res.send({ error: false });
   } catch (e) {
     console.error(e);
     res.send({ error: true, msg: String(e), printer: printerName });
   }
+});
+
+router.post("/print-picklist", async (req, res) => {
+  const settings = await getSettings();
+  // Use printer from request body, then fall back to a dedicated picklistPrinter setting, then default printer
+  const printerName = req.body.printer || settings["picklistPrinter"] || settings["shippingLabelPrinter"];
+  const buffer = Buffer.from(req.body.label, "base64");
+  const filePath = join(desktopPath, `picklist-${Date.now()}.pdf`);
+  try {
+    await fs.writeFile(filePath, buffer);
+    // No custom paper size — print full-page on whatever paper is loaded in the printer
+    await printPDF(filePath, { printer: printerName });
+    lastFileWritten = "picklist.pdf";
+    res.send({ error: false });
+  } catch (e) {
+    console.error(e);
+    res.send({ error: true, msg: String(e), printer: printerName });
+  }
+});
+
+router.get("/getweight", (req, res) => {
+  const station = req.query.station ?? "station1";
+  res.send(getWeightForStation(station));
 });
 
 router.post("/sublimation", async (req, res) => {
@@ -168,13 +209,13 @@ router.post("/sublimation", async (req, res) => {
       const filePath = `${settings[folder]}/${pieceId}.${cfg.ext}`;
       const inputBuffer = Buffer.from(base64, "base64");
       const fileBuffer = folder === "gift-messages"
-        ? await sharp(inputBuffer).png().toBuffer()
+        ? await Jimp.read(inputBuffer).then(img => img.getBufferAsync(Jimp.MIME_PNG))
         : inputBuffer;
       await fs.writeFile(filePath, fileBuffer);
       lastFileWritten = `${pieceId}.${cfg.ext}`;
       const printerKey = cfg.printerKey;
       if (cfg.canPrint && autoPrint && printerKey && settings[printerKey]) {
-        ptp.print(filePath, { printer: settings[printerKey] })
+        printPDF(filePath, { printer: settings[printerKey] })
           .catch(e => console.error(`${folder} auto-print error:`, e));
       }
     }
@@ -182,6 +223,41 @@ router.post("/sublimation", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.send({ error: true, msg: String(e) });
+  }
+});
+
+// ── ColDesi hot-folder route ──────────────────────────────────────────────────
+// Body: { pieceId, preset, imageBase64? (PNG base64), imageUrl? }
+// `preset` maps to a hot folder path configured in settings.coldesi.hotFolders
+// e.g. settings.coldesi.hotFolders = { standard: "C:/HotFolders/Standard", white_ink: "C:/HotFolders/WhiteInk" }
+router.post("/coldesi", async (req, res) => {
+  const settings = await getSettings();
+  const { pieceId, preset = "standard", imageBase64, imageUrl } = req.body;
+
+  const hotFolder = settings.coldesi?.hotFolders?.[preset];
+  if (!hotFolder) {
+    return res.send({ error: true, msg: `ColDesi hot folder not configured for preset "${preset}"` });
+  }
+
+  try {
+    let buffer;
+    if (imageBase64) {
+      buffer = Buffer.from(imageBase64, "base64");
+    } else if (imageUrl) {
+      const { default: axios } = await import("axios");
+      const resp = await axios.get(imageUrl, { responseType: "arraybuffer" });
+      buffer = Buffer.from(resp.data);
+    } else {
+      return res.send({ error: true, msg: "imageBase64 or imageUrl required" });
+    }
+
+    const filename = `${pieceId}.png`;
+    await fs.writeFile(`${hotFolder}/${filename}`, buffer);
+    lastFileWritten = filename;
+    return res.send({ error: false, msg: "written to hot folder", filename, preset, hotFolder });
+  } catch (e) {
+    console.error("[coldesi]", e);
+    return res.send({ error: true, msg: String(e) });
   }
 });
 

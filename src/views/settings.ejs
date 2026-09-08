@@ -25,7 +25,7 @@
       const {
         ThemeProvider, createTheme, CssBaseline, Box, Typography,
         Card, CardContent, CardHeader, TextField, Button, IconButton,
-        Select, MenuItem, FormControl, InputLabel, Divider,
+        Select, MenuItem, FormControl, InputLabel, Divider, Chip,
         Snackbar, Alert, CircularProgress, Tooltip,
       } = MaterialUI;
       const { useState, useEffect } = React;
@@ -99,6 +99,8 @@
         const [printers, setPrinters]   = useState([]);
         const [saving, setSaving]       = useState(false);
         const [toast, setToast]         = useState({ open: false, msg: '', severity: 'success' });
+        const [scaleDevices, setScaleDevices] = useState((window._fwSettings || {}).scaleDevices || []);
+        const [newScale, setNewScale] = useState({ name: '', vendorId: '2338', productId: '32777' });
 
         useEffect(() => {
           window.electronAPI?.printers?.().then(list => setPrinters(list || []));
@@ -119,6 +121,31 @@
           } finally {
             setSaving(false);
           }
+        };
+
+        const saveScaleDevices = async (devices) => {
+          setScaleDevices(devices);
+          setSaving(true);
+          try {
+            const { data } = await axios.post('/settings', { name: 'scaleDevices', path: JSON.stringify(devices) });
+            if (data.error) showToast('Save failed', 'error');
+            else showToast('Scale settings saved');
+          } catch {
+            showToast('Could not reach server', 'error');
+          } finally {
+            setSaving(false);
+          }
+        };
+
+        const addScale = () => {
+          if (!newScale.name.trim() || !newScale.vendorId || !newScale.productId) return;
+          const updated = [...scaleDevices, { ...newScale }];
+          setNewScale({ name: '', vendorId: '2338', productId: '32777' });
+          saveScaleDevices(updated);
+        };
+
+        const removeScale = (idx) => {
+          saveScaleDevices(scaleDevices.filter((_, i) => i !== idx));
         };
 
         return (
@@ -156,6 +183,51 @@
                 </CardContent>
               </Card>
 
+              {/* Scales */}
+              <Card sx={{ bgcolor: '#1a1a1a', border: '1px solid #2a2a2a', mb: 2.5 }}>
+                <CardHeader
+                  avatar={<i className="fa-solid fa-weight-hanging" style={{ color: '#fedd94', fontSize: '1rem' }} />}
+                  title={<Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#f0f0f0' }}>USB Scales</Typography>}
+                  subheader={<Typography variant="caption" sx={{ color: '#555' }}>USB HID scales connected to this PC (replaces Raspberry Pi)</Typography>}
+                  sx={{ borderBottom: '1px solid #2a2a2a', pb: 1.5 }}
+                />
+                <CardContent sx={{ pt: 2 }}>
+                  {scaleDevices.map((sc, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Chip label={sc.name} size="small" sx={{ bgcolor: '#2a2a2a', color: '#fedd94', border: '1px solid #fedd9440', minWidth: 80, fontFamily: 'monospace' }} />
+                      <Typography variant="body2" sx={{ color: '#ccc', fontFamily: 'monospace', flexGrow: 1 }}>
+                        VID: {sc.vendorId} &nbsp;PID: {sc.productId}
+                      </Typography>
+                      <Tooltip title="Remove">
+                        <IconButton size="small" onClick={() => removeScale(i)} sx={{ color: '#666', '&:hover': { color: '#ef5350' } }}>
+                          <i className="fa-solid fa-trash" style={{ fontSize: '0.8rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ))}
+                  {scaleDevices.length === 0 && (
+                    <Typography variant="caption" sx={{ color: '#444', display: 'block', mb: 1.5 }}>
+                      No scales configured. Add a scale below. Default Dymo M25: VID 2338, PID 32777.
+                    </Typography>
+                  )}
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
+                    <TextField size="small" label="Station name" placeholder="station1"
+                      value={newScale.name} onChange={e => setNewScale(s => ({ ...s, name: e.target.value }))}
+                      sx={{ width: 130, ...inputSx }} />
+                    <TextField size="small" label="Vendor ID" placeholder="2338"
+                      value={newScale.vendorId} onChange={e => setNewScale(s => ({ ...s, vendorId: e.target.value }))}
+                      sx={{ width: 110, ...inputSx }} />
+                    <TextField size="small" label="Product ID" placeholder="32777"
+                      value={newScale.productId} onChange={e => setNewScale(s => ({ ...s, productId: e.target.value }))}
+                      sx={{ width: 110, ...inputSx }} />
+                    <Button variant="contained" onClick={addScale}
+                      sx={{ bgcolor: '#fedd94', color: '#1a1a1a', fontWeight: 700, '&:hover': { bgcolor: '#f5ca60' } }}>
+                      Add Scale
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+
               {/* Printers */}
               <Card sx={{ bgcolor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
                 <CardHeader
@@ -167,6 +239,7 @@
                 <CardContent sx={{ pt: 2 }}>
                   {[
                     { key: 'shippingLabelPrinter',   label: 'Shipping Label Printer', icon: 'fa-tag' },
+                    { key: 'picklistPrinter',         label: 'Picklist Printer',       icon: 'fa-list-ul' },
                     { key: 'buttonsPrinter',          label: 'Buttons Printer',        icon: 'fa-circle' },
                     { key: 'giftMessagesPrinter',     label: 'Gift Messages Printer',  icon: 'fa-gift' },
                     { key: 'posterPagewidePrinter',   label: 'Poster (Wide) Printer',  icon: 'fa-file-image' },

@@ -7,6 +7,7 @@ import express from "express";
 import bodyParser from 'body-parser';
 import routes from "./routes/index.js";
 import setupUpdates from "./functions/update.cjs";
+import { startScales } from "./functions/scales.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +21,10 @@ exp.use(express.static(publicDirectoryPath));
 exp.use(bodyParser.urlencoded({ limit: "1000000gb", parameterLimit: 1000000000000, extended: true }));
 exp.use(bodyParser.json({ limit: "1000000gb" }));
 exp.use("/", routes);
-exp.listen(3500, () => console.log("writer listening on port 3500"));
+exp.listen(3500, () => {
+    console.log("writer listening on port 3500");
+    startScales();
+});
 
 if (started) app.quit();
 
