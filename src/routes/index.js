@@ -2,6 +2,7 @@ import express from "express";
 import fs from "fs/promises";
 import os from "os";
 import ptp from "pdf-to-printer2";
+import sharp from "sharp";
 import { getSettings, updateSettings } from "../functions/settings.js";
 
 const router = express.Router();
@@ -146,12 +147,36 @@ router.post("/print-labels", async (req, res) => {
 
 router.post("/sublimation", async (req, res) => {
   const settings = await getSettings();
-  const { folder, base64, pieceId } = req.body;
-  const writableFolders = ["11 oz", "15 oz", "epson", "stickers"];
+  const { folder, base64, pieceId, print: autoPrint } = req.body;
+  const folderConfig = {
+    "11 oz":           { ext: "pdf" },
+    "15 oz":           { ext: "pdf" },
+    "epson":           { ext: "pdf" },
+    "stickers":        { ext: "pdf" },
+    "poster-pagewide": { ext: "jpg", canPrint: true, printerKey: "posterPagewidePrinter" },
+    "poster-epsonhot": { ext: "jpg", canPrint: true, printerKey: "posterEpsonPrinter" },
+    "buttons":         { ext: "pdf", canPrint: true, printerKey: "buttonsPrinter" },
+    "gift-messages":   { ext: "png", canPrint: true, printerKey: "giftMessagesPrinter" },
+    "sawgrass":        { ext: "pdf" },
+    "canvas":          { ext: req.body.ext || "tiff" },
+    "pagewide":        { ext: "pdf" },
+    "socks":           { ext: "png" },
+  };
   try {
-    if (writableFolders.includes(folder)) {
-      const buffer = Buffer.from(base64, "base64");
-      await fs.writeFile(`${settings[folder]}/${pieceId}.pdf`, buffer);
+    const cfg = folderConfig[folder];
+    if (cfg && settings[folder]) {
+      const filePath = `${settings[folder]}/${pieceId}.${cfg.ext}`;
+      const inputBuffer = Buffer.from(base64, "base64");
+      const fileBuffer = folder === "gift-messages"
+        ? await sharp(inputBuffer).png().toBuffer()
+        : inputBuffer;
+      await fs.writeFile(filePath, fileBuffer);
+      lastFileWritten = `${pieceId}.${cfg.ext}`;
+      const printerKey = cfg.printerKey;
+      if (cfg.canPrint && autoPrint && printerKey && settings[printerKey]) {
+        ptp.print(filePath, { printer: settings[printerKey] })
+          .catch(e => console.error(`${folder} auto-print error:`, e));
+      }
     }
     res.send({ error: false, msg: "file written" });
   } catch (e) {

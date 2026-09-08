@@ -41,13 +41,21 @@
       });
 
       const HOT_FOLDERS = [
-        { key: 'dtf',        label: 'DTF',          icon: 'fa-print' },
-        { key: 'embroidery', label: 'Embroidery',   icon: 'fa-scissors' },
-        { key: 'roq',        label: 'ROQ',           icon: 'fa-boxes-stacked' },
-        { key: '11 oz',      label: '11oz Mug',      icon: 'fa-mug-hot' },
-        { key: '15 oz',      label: '15oz Mug',      icon: 'fa-mug-hot' },
-        { key: 'epson',      label: 'Epson',         icon: 'fa-print' },
-        { key: 'stickers',   label: 'Stickers',      icon: 'fa-tag' },
+        { key: 'dtf',             label: 'DTF',               icon: 'fa-print' },
+        { key: 'embroidery',      label: 'Embroidery',        icon: 'fa-scissors' },
+        { key: 'roq',             label: 'ROQ',               icon: 'fa-boxes-stacked' },
+        { key: '11 oz',           label: '11oz Mug',          icon: 'fa-mug-hot' },
+        { key: '15 oz',           label: '15oz Mug',          icon: 'fa-mug-hot' },
+        { key: 'epson',           label: 'Epson',             icon: 'fa-print' },
+        { key: 'stickers',        label: 'Stickers',          icon: 'fa-tag' },
+        { key: 'poster-pagewide', label: 'Poster (Wide)',     icon: 'fa-file-image' },
+        { key: 'poster-epsonhot', label: 'Poster (Epson)',    icon: 'fa-file-image' },
+        { key: 'buttons',         label: 'Buttons',           icon: 'fa-circle' },
+        { key: 'gift-messages',   label: 'Gift Messages',     icon: 'fa-gift' },
+        { key: 'sawgrass',        label: 'Sawgrass',          icon: 'fa-hat-cowboy' },
+        { key: 'canvas',          label: 'Canvas',            icon: 'fa-image' },
+        { key: 'pagewide',        label: 'Wrapping Paper',    icon: 'fa-scroll' },
+        { key: 'socks',           label: 'Socks',             icon: 'fa-socks' },
       ];
 
       const inputSx = {
@@ -157,23 +165,31 @@
                   sx={{ borderBottom: '1px solid #2a2a2a', pb: 1.5 }}
                 />
                 <CardContent sx={{ pt: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <i className="fa-solid fa-tag" style={{ color: '#fedd94', fontSize: '0.85rem', width: 16, textAlign: 'center', flexShrink: 0 }} />
-                    <FormControl size="small" fullWidth sx={inputSx}>
-                      <InputLabel sx={{ '&.Mui-focused': { color: '#fedd94' } }}>Shipping Label Printer</InputLabel>
-                      <Select
-                        label="Shipping Label Printer"
-                        value={settings['shippingLabelPrinter'] || ''}
-                        onChange={(e) => saveSetting('shippingLabelPrinter', e.target.value)}
-                        sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-                      >
-                        <MenuItem value=""><em>Select a printer</em></MenuItem>
-                        {printers.map(p => (
-                          <MenuItem key={p} value={p}>{p}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
+                  {[
+                    { key: 'shippingLabelPrinter',   label: 'Shipping Label Printer', icon: 'fa-tag' },
+                    { key: 'buttonsPrinter',          label: 'Buttons Printer',        icon: 'fa-circle' },
+                    { key: 'giftMessagesPrinter',     label: 'Gift Messages Printer',  icon: 'fa-gift' },
+                    { key: 'posterPagewidePrinter',   label: 'Poster (Wide) Printer',  icon: 'fa-file-image' },
+                    { key: 'posterEpsonPrinter',      label: 'Poster (Epson) Printer', icon: 'fa-file-image' },
+                  ].map(({ key, label, icon }) => (
+                    <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                      <i className={`fa-solid ${icon}`} style={{ color: '#fedd94', fontSize: '0.85rem', width: 16, textAlign: 'center', flexShrink: 0 }} />
+                      <FormControl size="small" fullWidth sx={inputSx}>
+                        <InputLabel sx={{ '&.Mui-focused': { color: '#fedd94' } }}>{label}</InputLabel>
+                        <Select
+                          label={label}
+                          value={settings[key] || ''}
+                          onChange={(e) => saveSetting(key, e.target.value)}
+                          sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                        >
+                          <MenuItem value=""><em>Select a printer</em></MenuItem>
+                          {printers.map(p => (
+                            <MenuItem key={p} value={p}>{p}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  ))}
                   {printers.length === 0 && (
                     <Typography variant="caption" sx={{ color: '#444', display: 'block', mt: 1, ml: 4 }}>
                       No printers detected
