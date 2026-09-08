@@ -95,3 +95,10 @@ out/
 # Runtime-generated config (stored in ~/Documents/pythias/ at runtime)
 src/settings.json
 .env
+
+# Build output
+.forge-tmp/
+out/
+
+# Per-machine runtime config (written to ~/Documents/pythias/)
+src/settings.json

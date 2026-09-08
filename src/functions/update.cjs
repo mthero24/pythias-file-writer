@@ -12,7 +12,7 @@ module.exports = function setupUpdates(win) {
   autoUpdater.on('error',                (err) => send({ status: 'error', msg: err.message }));
 
   try {
-    const feedURL = `https://update.electronjs.org/mthero24/pythias-electon-apps/win32-x64/${app.getVersion()}`;
+    const feedURL = `https://update.electronjs.org/mthero24/pythias-file-writer/win32-x64/${app.getVersion()}`;
     autoUpdater.setFeedURL({ url: feedURL, serverType: 'json' });
     autoUpdater.checkForUpdates();
     setInterval(() => autoUpdater.checkForUpdates(), 60 * 60 * 1000);

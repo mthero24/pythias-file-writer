@@ -66,7 +66,7 @@ module.exports = {
       config: {
         repository: {
           owner: "mthero24",
-          name: "pythias-electon-apps",
+          name: "pythias-file-writer",
         },
         icon: "./src/public/logo-dark-50-ico",
         prerelease: false,
