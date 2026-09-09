@@ -51,10 +51,10 @@ export default {
             config: {
                 repository: {
                     owner: "mthero24",
-                    name: "pythias-electon-apps",
+                    name: "pythias-file-writer",
                 },
                 prerelease: false,
-                draft: true,
+                draft: false,
             },
         },
     ],
